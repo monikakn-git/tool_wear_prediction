@@ -1,25 +1,29 @@
-# Generalized Tool Wear Prediction - PowerShell Launcher
+# AI-Powered Smart Tool Intelligence - Unified PowerShell Launcher
 Write-Host "=====================================================================" -ForegroundColor Cyan
-Write-Host " GENERALIZED TOOL WEAR PREDICTION FOR MANUFACTURING (ANN REGRESSION)" -ForegroundColor White
-Write-Host " Dataset: NASA Milling Wear Benchmark · Standard: ISO 3685 (VB)" -ForegroundColor Yellow
+Write-Host " AI-POWERED SMART TOOL INTELLIGENCE, WEAR PREDICTION & RECOMMENDATIONS" -ForegroundColor White
+Write-Host " Integrated Full-Stack Manufacturing Application (v2.0)" -ForegroundColor Yellow
 Write-Host "=====================================================================" -ForegroundColor Cyan
 
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
 Set-Location $projectRoot
 
-Write-Host "`n[1/2] Starting FastAPI Backend on http://127.0.0.1:8000 ..." -ForegroundColor Green
-$backendProcess = Start-Process powershell -ArgumentList "-NoExit", "-Command", "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload" -PassThru
+# Ensure production bundle exists
+if (-not (Test-Path "$projectRoot\frontend\dist\index.html")) {
+    Write-Host "`nBuilding React frontend for integrated serving..." -ForegroundColor Yellow
+    Set-Location "$projectRoot\frontend"
+    npm run build
+    Set-Location $projectRoot
+}
+
+Write-Host "`nLaunching Unified Full-Stack Application on http://127.0.0.1:8000 ..." -ForegroundColor Green
+Write-Host "(FastAPI serves both REST APIs and the React Single-Page Application)" -ForegroundColor Gray
+
+$serverProcess = Start-Process powershell -ArgumentList "-NoExit", "-Command", "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload" -PassThru
 
 Start-Sleep -Seconds 3
 
-Write-Host "[2/2] Starting React Vite Frontend on http://localhost:5173 ..." -ForegroundColor Green
-$frontendProcess = Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$projectRoot\frontend'; npm run dev" -PassThru
-
-Start-Sleep -Seconds 2
-
 Write-Host "`nApplication running successfully!" -ForegroundColor Cyan
-Write-Host "Frontend: http://localhost:5173" -ForegroundColor White
-Write-Host "Backend API: http://127.0.0.1:8000/docs`n" -ForegroundColor White
+Write-Host "Unified Full-Stack App: http://127.0.0.1:8000/" -ForegroundColor White
+Write-Host "Backend Swagger API:     http://127.0.0.1:8000/docs`n" -ForegroundColor White
 
-Start-Process "http://localhost:5173"
-
+Start-Process "http://127.0.0.1:8000/"

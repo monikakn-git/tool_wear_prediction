@@ -1,30 +1,31 @@
 @echo off
-title Generalized Tool Wear Prediction - NASA Milling Dataset
+title AI-Powered Smart Tool Intelligence & Wear Prediction
 echo =====================================================================
-echo  GENERALIZED TOOL WEAR PREDICTION FOR MANUFACTURING (ANN REGRESSION)
-echo  Dataset: NASA Milling Wear Benchmark (Matsuura MC-510V CNC)
-echo  Standard: ISO 3685 Tool Life Flank Wear (VB)
+echo  AI-POWERED SMART TOOL INTELLIGENCE, WEAR PREDICTION & RECOMMENDATIONS
+echo  Integrated Full-Stack Manufacturing Application (v2.0)
 echo =====================================================================
 echo.
 
 cd /d "%~dp0"
 
-echo [1/2] Launching FastAPI Backend Server on http://127.0.0.1:8000 ...
-start "Milling Wear - Backend API" cmd /k "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload"
+echo [1/2] Verifying production frontend build...
+if not exist "frontend\dist\index.html" (
+    echo Building React frontend for production integration...
+    cd frontend
+    call npm run build
+    cd ..
+)
+
+echo [2/2] Launching Integrated Unified Application on http://127.0.0.1:8000 ...
+echo (FastAPI serves both the REST API endpoints and the React Frontend UI directly)
+start "Smart Tool Intelligence - Unified Server" cmd /k "python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload"
 
 timeout /t 3 /nobreak > nul
-
-echo [2/2] Launching React Vite Frontend on http://localhost:5173 ...
-cd frontend
-start "Milling Wear - React Frontend" cmd /k "npm run dev"
-
-timeout /t 2 /nobreak > nul
 echo.
-echo Application successfully launched!
-echo Backend Swagger API: http://127.0.0.1:8000/docs
-echo Frontend Web Dashboard: http://localhost:5173
+echo Application successfully running!
+echo Unified Web App: http://127.0.0.1:8000/
+echo Swagger API Docs: http://127.0.0.1:8000/docs
 echo.
-echo Opening browser...
-start http://localhost:5173
+echo Opening browser to http://127.0.0.1:8000/ ...
+start http://127.0.0.1:8000/
 pause
-
