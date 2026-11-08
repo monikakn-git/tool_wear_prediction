@@ -31,7 +31,11 @@ backend/models/*.h5
 backend/reports/*.md
 backend/reports/*.json
 
+# Local database & uploaded images
+*.db
+backend/data/*.db
+backend/uploads/
+
 # OS
 .DS_Store
 Thumbs.db
-

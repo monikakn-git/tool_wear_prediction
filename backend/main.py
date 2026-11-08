@@ -10,25 +10,48 @@ from backend.config import DEFAULT_DATASET_PATH, PROJECT_ROOT
 from backend.api.dataset_routes import router as dataset_router
 from backend.api.model_routes import router as model_router
 from backend.api.report_routes import router as report_router
-from backend.data_processing.dataset_loader import dataset_loader
+from backend.api.tools_routes import router as tools_router
+from backend.api.inspection_routes import router as inspection_router
+from backend.api.life_routes import router as life_router
+from backend.api.recommendation_routes import router as recommendation_router
+
+# Import DB initialisation and catalogue seeding
+from backend.database.models import Base, engine
+from backend.tool_catalogue.catalogue_service import ToolCatalogueService
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Fast startup - lazy load dataset on first endpoint query
-    print("[STARTUP] Industrial ML Engine initialized.")
+    """Application startup and shutdown lifecycle."""
+    print("[STARTUP] Smart Tool Intelligence System initialized.")
+
+    # Ensure database tables exist
+    Base.metadata.create_all(engine)
+
+    # Seed default tool catalogue if empty
+    catalogue = ToolCatalogueService()
+    seed_result = catalogue.seed_default_tools()
+    print(f"[STARTUP] Tool catalogue: {seed_result['message']}")
+
     if DEFAULT_DATASET_PATH.exists():
         print(f"[STARTUP] Verified dataset at: {DEFAULT_DATASET_PATH}")
+
     yield
-    print("[SHUTDOWN] Industrial ML Engine shutdown complete.")
+    print("[SHUTDOWN] Smart Tool Intelligence System shutdown complete.")
+
 
 app = FastAPI(
-    title="Generalized Tool Wear Prediction API",
-    description="High-precision industrial ANN regression system for tool flank wear (VB) prediction on NASA Milling Dataset",
-    version="1.0.0",
+    title="AI-Powered Smart Tool Intelligence API",
+    description=(
+        "Manufacturing tool identification, wear prediction, "
+        "condition inspection, life estimation, and operation recommendation system. "
+        "Powered by ANN regression on the NASA Milling Wear Dataset."
+    ),
+    version="2.0.0",
     lifespan=lifespan
 )
 
-# Enable CORS for React frontend (Vite default: http://localhost:5173, plus others)
+# Enable CORS for React frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -37,25 +60,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
+# Include all routers
 app.include_router(dataset_router)
 app.include_router(model_router)
 app.include_router(report_router)
+app.include_router(tools_router)
+app.include_router(inspection_router)
+app.include_router(life_router)
+app.include_router(recommendation_router)
+
 
 @app.get("/api/health")
 async def health_check():
     """Health status and environment verification."""
     has_dataset = DEFAULT_DATASET_PATH.exists()
+    catalogue = ToolCatalogueService()
+    stats = catalogue.get_tool_stats()
     return {
         "status": "healthy",
-        "service": "Generalized Tool Wear Prediction API",
+        "service": "AI-Powered Smart Tool Intelligence System",
+        "version": "2.0.0",
         "dataset_available": has_dataset,
         "dataset_path": str(DEFAULT_DATASET_PATH) if has_dataset else None,
-        "frameworks": {
-            "fastapi": True,
-            "tensorflow_enabled": True
+        "total_registered_tools": stats["total_tools"],
+        "total_assessments": stats["total_assessments"],
+        "modules": {
+            "tool_identification": True,
+            "wear_prediction": True,
+            "visual_inspection": True,
+            "tool_life_estimation": True,
+            "operation_recommendations": True,
         }
     }
+
 
 # Serve built React SPA if present
 frontend_dist = PROJECT_ROOT / "frontend" / "dist"
@@ -72,4 +109,3 @@ if (frontend_dist / "index.html").exists():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("backend.main:app", host="127.0.0.1", port=8000, reload=True)
-
